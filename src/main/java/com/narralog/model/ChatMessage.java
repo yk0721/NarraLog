@@ -1,4 +1,4 @@
-package com.example.narralog.model;
+package com.narralog.model;
 
 import jakarta.persistence.*;
 import lombok.Data;

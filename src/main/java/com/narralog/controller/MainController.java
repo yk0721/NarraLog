@@ -12,7 +12,7 @@ import java.util.UUID;
 
 @RestController
 @RequiredArgsConstructor
-@CrossOrigin(origins = "http://localhost:5173")
+@CrossOrigin(origins = "http://localhost:5174")
 public class MainController {
 
     private final ProblemRepository problemRepo;
@@ -40,5 +40,12 @@ public class MainController {
         chatRepo.save(message);
         // 購読している全員に配信
         messagingTemplate.convertAndSend("/topic/problems/" + problemId, message);
+    }
+    // 4. 相談一覧取得API (ここを追加！)
+    @GetMapping("/api/problems")
+    public List<Problem> getAllProblems() {
+        // 新しい順に返すとUXが良いのでID順または作成日順などが理想ですが、
+        // まずは全件取得でOKです。
+        return problemRepo.findAll();
     }
 }

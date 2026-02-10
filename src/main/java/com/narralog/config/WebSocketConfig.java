@@ -1,4 +1,4 @@
-package com.example.narralog.config;
+package com.narralog.config;
 
 import org.springframework.context.annotation.Configuration;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;
@@ -16,6 +16,6 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
         // React(5173)からの接続を許可
-        registry.addEndpoint("/ws").setAllowedOrigins("http://localhost:5173").withSockJS();
+        registry.addEndpoint("/ws").setAllowedOrigins("http://localhost:5174").withSockJS();
     }
 }
