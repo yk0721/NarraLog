@@ -16,6 +16,6 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
         // React(5173)からの接続を許可
-        registry.addEndpoint("/ws").setAllowedOrigins("http://localhost:5174").withSockJS();
+        registry.addEndpoint("/ws").setAllowedOrigins("http://localhost:5173").withSockJS();
     }
 }

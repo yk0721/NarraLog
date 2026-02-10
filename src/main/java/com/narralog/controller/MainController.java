@@ -12,7 +12,7 @@ import java.util.UUID;
 
 @RestController
 @RequiredArgsConstructor
-@CrossOrigin(origins = "http://localhost:5174")
+@CrossOrigin(origins = "http://localhost:5173")
 public class MainController {
 
     private final ProblemRepository problemRepo;
@@ -23,7 +23,7 @@ public class MainController {
     @PostMapping("/api/problems")
     public Problem createProblem(@RequestBody Problem problem) {
         // ★本来はここでAI APIを叩く。今はダミー
-        problem.setTitle("【AI要約】" + problem.getContent().substring(0, Math.min(problem.getContent().length(), 10)) + "...");
+        problem.setTitle("【AI要約】" + problem.getContent().substring(0, Math.min(problem.getContent().length(), 10)) );
         return problemRepo.save(problem);
     }
 
