@@ -8,5 +8,5 @@ export default defineConfig({
       react(),
       tailwindcss(),
       ],
-  content: ['./src/**/*.{html,ts,tsx}',"/index.html"],
+  base: '/app/',
 })

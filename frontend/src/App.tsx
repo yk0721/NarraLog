@@ -13,10 +13,9 @@ type Problem = { id: string; content: string; title: string; };
 type Message = { id?: string; sender: string; content: string; };
 
 function App() {
-    const [user, setUser] = useState<{username: string} | null>(
+    const [user, setUser] = useState<{username: string, email: string} | null>(
         JSON.parse(localStorage.getItem('narralog_user') || 'null')
     );
-    const [loginName] = useState('');
     const [view, setView] = useState<'HOME' | 'CHAT'>('HOME');
     const [input, setInput] = useState('');
     const [problems, setProblems] = useState<Problem[]>([]); // ★追加: 相談リスト
@@ -41,14 +40,14 @@ function App() {
                 setIsRegisterMode(false); // ログイン画面へ
             } else {
                 // --- ログイン ---
-                await axios.post('http://localhost:8080/api/login', {
+                const res = await axios.post('http://localhost:8080/api/login', {
                     email, password
                 });
                 // 成功したらユーザー情報を保存
-                const userData = { username: username || "User" }; // 本来はレスポンスから取るべき
+                const userData = { username: res.data.username, email: res.data.email };
                 setUser(userData);
                 localStorage.setItem('narralog_user', JSON.stringify(userData));
-                fetchProblems();
+                await fetchProblems();
             }
         } catch (e: any) {
             alert("認証失敗: " + (e.response?.data?.message || "エラーが発生しました"));
@@ -56,46 +55,9 @@ function App() {
         }
     };
 
-    const handleLogin = async () => {
-        console.log("① ボタンがクリックされました"); // これが出なければonClickの設定ミス
-
-        if (!loginName) {
-            alert("名前を入力してください！");
-            return;
-        }
-
-        try {
-            console.log("② ログイン通信を開始します...", loginName);
-
-            // バックエンドへ送信
-            const res = await axios.post('http://localhost:8080/api/login', { username: loginName });
-
-            console.log("③ サーバーからの応答:", res); // これが出れば通信成功
-
-            if (res.status === 200) {
-                console.log("④ ログイン成功！画面を切り替えます");
-                const userData = { username: loginName };
-                setUser(userData);
-                localStorage.setItem('narralog_user', JSON.stringify(userData));
-
-                // 一覧取得
-                console.log("⑤ 相談一覧を取得しに行きます");
-                await fetchProblems();
-            }
-        } catch (e: any) {
-            // ここでエラー内容をポップアップで表示！
-            console.error("★エラー発生:", e);
-            alert(`エラーが発生しました！\n内容: ${e.message}\n(詳細はF12コンソールを見てください)`);
-
-            if (axios.isAxiosError(e) && e.response) {
-                console.log("サーバーのレスポンス:", e.response.status, e.response.data);
-            }
-        }
-    };
-
     // ★追加: 初回ロード時に相談一覧を取得
     useEffect(() => {
-        //fetchProblems();
+        fetchProblems();
     }, []);
 
     const fetchProblems = async () => {
@@ -154,8 +116,8 @@ function App() {
 
     // 3. メッセージ送信
     const sendMessage = () => {
-        if (!chatInput || !currentProblem || !stompClientRef.current) return;
-        const msg = {sender: user.username, content: chatInput};
+        if (!chatInput || !currentProblem || !stompClientRef.current || !user) return;
+        const msg = {sender: user.email, content: chatInput};
         stompClientRef.current.send(`/app/chat/${currentProblem.id}`, {}, JSON.stringify(msg));
         setChatInput('');
     };
@@ -287,13 +249,13 @@ function App() {
                         <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-slate-50">
                             {messages.map((m, i) => (
                                 <div key={i}
-                                     className={`flex ${m.sender === user.username ? 'justify-end' : 'justify-start'}`}>
+                                     className={`flex ${m.sender === user?.email ? 'justify-end' : 'justify-start'}`}>
                                     <div
-                                        className={`max-w-[85%] p-3 rounded-2xl text-sm shadow-sm ${m.sender === user.username
+                                        className={`max-w-[85%] p-3 rounded-2xl text-sm shadow-sm ${m.sender === user?.email
                                             ? 'bg-blue-600 text-white rounded-br-none'
                                             : 'bg-white text-gray-800 border rounded-bl-none'}`}>
                                         <div
-                                            className={`text-[10px] mb-1 ${m.sender === user.username ? 'text-blue-100' : 'text-gray-400'}`}>
+                                            className={`text-[10px] mb-1 ${m.sender === user?.email ? 'text-blue-100' : 'text-gray-400'}`}>
                                             {m.sender}
                                         </div>
                                         {m.content}

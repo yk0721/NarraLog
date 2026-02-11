@@ -57,4 +57,27 @@ tasks.named('test') {
     useJUnitPlatform()
 }
 
+def frontendDir = "$projectDir/frontend"
+
+task buildFrontend(type: Exec) {
+    workingDir frontendDir
+    inputs.dir frontendDir
+    outputs.dir "$frontendDir/dist"
+
+    if (System.getProperty('os.name').toLowerCase(Locale.ROOT).contains('windows')) {
+        commandLine 'cmd', '/c', 'npm install && npm run build'
+    } else {
+        commandLine 'npm', 'install'
+        commandLine 'npm', 'run', 'build'
+    }
+}
+
+task copyFrontend(type: Copy) {
+    dependsOn buildFrontend
+    from "$frontendDir/dist"
+    into "$buildDir/resources/main/static/app"
+}
+
+processResources.dependsOn copyFrontend
+
 

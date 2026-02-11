@@ -2,7 +2,9 @@ package com.narralog.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.Customizer;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -10,6 +12,8 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
+import org.springframework.security.web.context.SecurityContextRepository;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -26,10 +30,12 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable) // CSRFは必ず無効化
                 .cors(Customizer.withDefaults()) // CORS設定を有効化
                 .authorizeHttpRequests(auth -> auth
-                        // 重要：ログインAPIを一番最初に記述して許可する
-                        .requestMatchers("/api/login").permitAll()
-                        .requestMatchers("/ws/**").permitAll()
-                        .requestMatchers("/api/login", "/api/register", "/ws/**").permitAll() // registerを追加
+                        // 静的リソースとルート、ログイン、登録APIを許可
+                        .requestMatchers("/", "/index.html", "/static/**", "/assets/**", "/app/assets/**", "/favicon.ico", "/error").permitAll()
+                        .requestMatchers("/api/login", "/api/register", "/api/problems/**", "/ws/**").permitAll()
+                        // アプリケーション本体 (/app) は、今のところはログイン画面を出すために許可
+                        // (React側でログイン状態を管理している想定)
+                        .requestMatchers("/app/**").permitAll()
                         // それ以外は認証が必要
                         .anyRequest().authenticated()
                 )
@@ -57,5 +63,15 @@ public class SecurityConfig {
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
+    }
+
+    @Bean
+    AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
+        return config.getAuthenticationManager();
+    }
+
+    @Bean
+    SecurityContextRepository securityContextRepository() {
+        return new HttpSessionSecurityContextRepository();
     }
 }
