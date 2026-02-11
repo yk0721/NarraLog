@@ -2,22 +2,35 @@ package com.narralog.controller;
 
 import com.narralog.model.*;
 import com.narralog.repository.*;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
+import lombok.Data;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.Setter;
+import org.springframework.boot.actuate.endpoint.SecurityContext;
 import org.springframework.messaging.handler.annotation.*;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetailsService;
 
 import java.util.List;
 import java.util.UUID;
 
 @RestController
 @RequiredArgsConstructor
-@CrossOrigin(origins = "http://localhost:5173")
 public class MainController {
 
     private final ProblemRepository problemRepo;
     private final ChatMessageRepository chatRepo;
     private final SimpMessagingTemplate messagingTemplate;
+    private final UserDetailsService userDetailsService;
+    private final UserRepository userRepo;
 
     // 1. ボヤき投稿API
     @PostMapping("/api/problems")
